@@ -6,7 +6,7 @@ Plataforma de Eventos e Ingressos: o organizador publica eventos a partir do cat
 
 - **Front-End:** Next.js (App Router) + React. UI consome a API Nest; leitura de QR na portaria via câmera no browser, com digitação manual como fallback.
 - **Back-End:** NestJS (Node.js). Autenticação, proxy TMDb, eventos, reservas, pagamento simulado, ingressos e validação de portaria.
-- **Banco:** PostgreSQL via Docker Compose no ambiente local. Schema versionado (migrations TypeORM ou Prisma — definir na etapa `feat(db)` e manter uma única fonte de verdade).
+- **Banco:** PostgreSQL via Docker Compose no ambiente local. Schema versionado com **Prisma 6** (`apps/api/prisma`) — escolhido em vez do Prisma 7 por integração direta com NestJS CommonJS (sem adapter/ESM).
 - **API externa (MVP):** [TMDb](https://developer.themoviedb.org/docs) — filmes em cartaz. Chave de API só no backend; front nunca vê o segredo. Ticketmaster fica fora do MVP.
 - **Modelo de reserva (MVP):** quantidade (pista), no espírito do Eventim/Sympla. Mapa de assentos (Ingresso.com) fica como opcional pós-MVP.
 - **Pagamento:** simulado no Nest (cenários de confirmação e recusa), sem gateway real no fluxo básico.
