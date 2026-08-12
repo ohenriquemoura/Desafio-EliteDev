@@ -17,9 +17,7 @@
 
 .nav {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.85rem;
-  justify-content: flex-end;
 }
 
 .nav a {
@@ -63,17 +61,19 @@
   color: var(--danger);
 }
 
-.grid {
+.inlineLink {
+  color: var(--highlight);
+  text-decoration: underline;
+}
+
+.list {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
   margin-top: 0.5rem;
 }
 
 .card {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 74px 1fr;
   gap: 1rem;
   padding: 1.1rem 0;
   border-bottom: 1px solid var(--line);
@@ -86,46 +86,51 @@
 
 .card img,
 .posterFallback {
-  width: 120px;
-  height: 180px;
+  width: 74px;
+  height: 111px;
   object-fit: cover;
   border-radius: var(--radius);
   background: var(--bg-soft);
 }
 
-.body h2 {
+.card h2 {
   font-family: var(--font-display), Oswald, sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
-.body p {
-  margin-top: 0.3rem;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.price {
-  color: var(--highlight) !important;
+.badge {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.72rem;
   font-weight: 600;
-}
-
-.seats {
-  font-size: 0.85rem !important;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  color: var(--muted);
 }
 
-@media (max-width: 560px) {
-  .card {
-    grid-template-columns: 90px 1fr;
-  }
+.status_PENDING_PAYMENT {
+  color: var(--highlight);
+  border-color: rgba(239, 201, 12, 0.45);
+  background: rgba(239, 201, 12, 0.08);
+}
 
-  .card img,
-  .posterFallback {
-    width: 90px;
-    height: 135px;
-  }
+.status_PAID {
+  color: #9be15d;
+  border-color: rgba(155, 225, 93, 0.4);
+  background: rgba(155, 225, 93, 0.08);
+}
+
+.status_PAYMENT_FAILED,
+.status_EXPIRED,
+.status_CANCELLED {
+  color: var(--danger);
+  border-color: rgba(255, 107, 107, 0.4);
+  background: rgba(255, 107, 107, 0.08);
 }

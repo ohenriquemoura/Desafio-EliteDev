@@ -4,10 +4,17 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { TmdbModule } from './tmdb/tmdb.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, TmdbModule, EventsModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    TmdbModule,
+    EventsModule,
+    ReservationsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

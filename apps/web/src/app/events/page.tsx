@@ -18,9 +18,12 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(Boolean(getSession()));
+    const session = getSession();
+    setIsLoggedIn(Boolean(session));
+    setIsClient(session?.user.role === "CLIENT");
     void loadEvents();
   }, []);
 
@@ -46,6 +49,7 @@ export default function EventsPage() {
       <header className={styles.header}>
         <BrandLockup compact />
         <nav className={styles.nav}>
+          {isClient && <Link href="/reservations">Minhas reservas</Link>}
           {isLoggedIn ? (
             <Link href="/login">Minha conta</Link>
           ) : (

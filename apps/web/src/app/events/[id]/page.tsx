@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { BrandLockup } from "@/components/BrandLockup";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
@@ -11,15 +11,23 @@ import {
   formatDateTime,
   formatPrice,
 } from "@/lib/events";
-import { AuthSession, getSession } from "@/lib/auth";
+import {
+  AuthSession,
+  getAccessToken,
+  getSession,
+} from "@/lib/auth";
+import { ReservationItem } from "@/lib/reservations";
 import styles from "./detail.module.css";
 
 export default function EventDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [event, setEvent] = useState<EventItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<AuthSession | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [reserving, setReserving] = useState(false);
 
   useEffect(() => {
     setSession(getSession());
@@ -33,6 +41,7 @@ export default function EventDetailPage() {
     try {
       const data = await apiFetch<EventItem>(`/events/${params.id}`);
       setEvent(data);
+      setQuantity(1);
     } catch (err) {
       setEvent(null);
       setError(
@@ -45,13 +54,53 @@ export default function EventDetailPage() {
     }
   }
 
+  async function onReserve(formEvent: FormEvent) {
+    formEvent.preventDefault();
+    if (!event) return;
+
+    setReserving(true);
+    setError(null);
+    try {
+      const reservation = await apiFetch<ReservationItem>("/reservations", {
+        method: "POST",
+        token: getAccessToken(),
+        body: JSON.stringify({
+          eventId: event.id,
+          quantity,
+        }),
+      });
+      router.push(`/reservations/${reservation.id}`);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Não foi possível criar a reserva.",
+      );
+    } finally {
+      setReserving(false);
+    }
+  }
+
+  const maxQty = event ? Math.max(1, Math.min(10, event.availableSeats)) : 1;
+  const canReserve =
+    session?.user.role === "CLIENT" &&
+    event !== null &&
+    event.availableSeats > 0;
+
   return (
     <main className={styles.main}>
       <header className={styles.header}>
         <BrandLockup compact />
-        <Link href="/events" className={styles.back}>
-          Voltar ao cartaz
-        </Link>
+        <div className={styles.headerLinks}>
+          {session?.user.role === "CLIENT" && (
+            <Link href="/reservations" className={styles.back}>
+              Minhas reservas
+            </Link>
+          )}
+          <Link href="/events" className={styles.back}>
+            Voltar ao cartaz
+          </Link>
+        </div>
       </header>
 
       {loading && <p className={styles.meta}>Carregando…</p>}
@@ -85,10 +134,41 @@ export default function EventDetailPage() {
               {event.overview || "Sem sinopse."}
             </p>
 
-            {session?.user.role === "CLIENT" ? (
-              <p className={styles.soon}>
-                Reserva e pagamento entram na próxima etapa.
-              </p>
+            {canReserve ? (
+              <form className={styles.reserveForm} onSubmit={onReserve}>
+                <label className={styles.qtyLabel} htmlFor="quantity">
+                  Quantidade (pista)
+                </label>
+                <div className={styles.qtyRow}>
+                  <input
+                    id="quantity"
+                    type="number"
+                    min={1}
+                    max={maxQty}
+                    value={quantity}
+                    onChange={(e) =>
+                      setQuantity(
+                        Math.max(
+                          1,
+                          Math.min(maxQty, Number(e.target.value) || 1),
+                        ),
+                      )
+                    }
+                  />
+                  <p className={styles.total}>
+                    Total {formatPrice(event.priceCents * quantity)}
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  className={styles.cta}
+                  disabled={reserving || event.availableSeats < 1}
+                >
+                  {reserving ? "Reservando…" : "Reservar"}
+                </button>
+              </form>
+            ) : session?.user.role === "CLIENT" ? (
+              <p className={styles.soon}>Evento esgotado no momento.</p>
             ) : (
               <Link className={styles.cta} href="/login">
                 Entrar para reservar
