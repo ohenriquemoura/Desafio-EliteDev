@@ -98,4 +98,4 @@ Na UI: login como organizador → http://localhost:3000/organizer
 
 ## Status
 
-Etapa atual: **feat(tmdb)** — proxy TMDb com cache para o organizador.
+Etapa atual: **feat(events)** — criação pelo organizador e cartaz público.

@@ -24,7 +24,7 @@ export default function Home() {
           portaria — do cartaz ao QR.
         </p>
         <div className={styles.actions}>
-          <Link className={styles.cta} href="/login">
+          <Link className={styles.cta} href="/events">
             Comprar ingresso
           </Link>
           <Link className={styles.secondary} href="/login">

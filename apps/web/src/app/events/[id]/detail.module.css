@@ -1,0 +1,128 @@
+.main {
+  min-height: 100vh;
+  padding: 1.5rem 1.25rem 2.5rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  animation: fadeUp 0.5s ease both;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.back {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--highlight);
+}
+
+.article {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+}
+
+.poster,
+.posterFallback {
+  width: 280px;
+  height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+}
+
+.kicker {
+  color: var(--highlight);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.content h1 {
+  margin-top: 0.4rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.meta,
+.overview,
+.soon,
+.error {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.price {
+  margin-top: 0.85rem;
+  color: var(--highlight);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.seats {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.overview {
+  margin-top: 1rem;
+  max-width: 36rem;
+}
+
+.cta {
+  display: inline-flex;
+  margin-top: 1.4rem;
+  min-height: 3rem;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+}
+
+.cta:hover {
+  background: var(--accent-hover);
+}
+
+.soon {
+  margin-top: 1.25rem;
+  color: var(--highlight);
+}
+
+.error {
+  color: var(--danger);
+}
+
+@media (max-width: 760px) {
+  .article {
+    grid-template-columns: 1fr;
+  }
+
+  .poster,
+  .posterFallback {
+    width: min(220px, 100%);
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+}
