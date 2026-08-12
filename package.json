@@ -1,0 +1,25 @@
+{
+  "name": "desafio-elitedev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma de Eventos e Ingressos — Desafio Elite Dev 2026",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev -w api",
+    "dev:web": "npm run dev -w web",
+    "build:api": "npm run build -w api",
+    "build:web": "npm run build -w web",
+    "build": "npm run build:api && npm run build:web",
+    "start:api": "npm run start:prod -w api",
+    "start:web": "npm run start -w web",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "UNLICENSED"
+}
