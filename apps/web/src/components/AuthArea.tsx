@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandLockup } from "@/components/BrandLockup";
 import {
   AuthSession,
   clearSession,
@@ -43,9 +43,7 @@ export function AuthArea({ expectedRole, title, description }: Props) {
 
   return (
     <main className={styles.main}>
-      <Link href="/" className={styles.brand}>
-        Elite Dev
-      </Link>
+      <BrandLockup compact />
       <h1 className={styles.title}>{title}</h1>
       <p className={styles.lead}>{description}</p>
       <p className={styles.user}>

@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandLockup } from "@/components/BrandLockup";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   AuthSession,
@@ -54,9 +54,7 @@ export default function LoginPage() {
 
   return (
     <main className={styles.main}>
-      <Link href="/" className={styles.brand}>
-        Elite Dev
-      </Link>
+      <BrandLockup compact />
       <h1 className={styles.title}>
         {mode === "login" ? "Entrar" : "Criar conta"}
       </h1>

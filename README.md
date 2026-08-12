@@ -10,11 +10,13 @@ Plano de execução: [`docs/PLANO.md`](docs/PLANO.md).
 
 - Docker Desktop (caminho recomendado)
 - Ou, para desenvolvimento local: Node.js 20+, npm 10+ e Docker só para o Postgres
+- Conta no [TMDb](https://www.themoviedb.org/) com **API Key** (grátis) em [settings/api](https://www.themoviedb.org/settings/api)
 
 ## Opção A — Tudo no Docker (recomendado)
 
 ```bash
 cp .env.example .env
+# edite .env e preencha TMDB_API_KEY=sua_chave
 npm run up
 ```
 
@@ -67,6 +69,18 @@ Senha de todas: `Demo@2026`
 
 Há ao menos um evento publicado (“Clube da Luta”) com capacidade disponível.
 
+### TMDb
+
+Defina `TMDB_API_KEY` no `.env` (e em `apps/api/.env` no modo local). Sem a chave, as rotas `/tmdb/*` respondem `503`. A chave fica só no backend.
+
+Rotas (JWT + papel `ORGANIZER`):
+
+- `GET /tmdb/now-playing`
+- `GET /tmdb/search?q=`
+- `GET /tmdb/movies/:id`
+
+Na UI: login como organizador → http://localhost:3000/organizer
+
 ## Scripts úteis
 
 | Script | Descrição |
@@ -84,4 +98,4 @@ Há ao menos um evento publicado (“Clube da Luta”) com capacidade disponíve
 
 ## Status
 
-Etapa atual: **feat(auth)** + stack completa no Docker Compose.
+Etapa atual: **feat(tmdb)** — proxy TMDb com cache para o organizador.

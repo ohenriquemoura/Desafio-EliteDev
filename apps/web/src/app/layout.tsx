@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
+import { Oswald, Work_Sans } from "next/font/google";
 import "./globals.css";
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
+});
+
+const workSans = Work_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Elite Dev — Eventos",
@@ -13,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body className={`${oswald.variable} ${workSans.variable}`}>{children}</body>
     </html>
   );
 }
