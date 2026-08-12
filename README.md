@@ -8,24 +8,51 @@ Plano de execução: [`docs/PLANO.md`](docs/PLANO.md).
 
 ## Pré-requisitos
 
-- Node.js 20+
-- npm 10+
-- Docker Desktop (para o PostgreSQL)
+- Docker Desktop (caminho recomendado)
+- Ou, para desenvolvimento local: Node.js 20+, npm 10+ e Docker só para o Postgres
 
-## Configuração rápida
+## Opção A — Tudo no Docker (recomendado)
 
 ```bash
 cp .env.example .env
-cp .env.example apps/api/.env   # Prisma CLI lê o .env em apps/api
-npm install
-npm run db:up
-npm run db:deploy               # aplica migrations existentes
-npm run db:seed
+npm run up
 ```
 
-O Postgres sobe em `localhost:5432` (usuário/senha/db: `elitedev`).
+Sobe **Postgres + API + Web**. Na subida, a API aplica migrations e o seed automaticamente.
 
-Para criar novas migrations em desenvolvimento: `npm run db:migrate`.
+- Web: http://localhost:3000
+- API: http://localhost:3001
+- Login: http://localhost:3000/login
+
+Para encerrar:
+
+```bash
+npm run down
+```
+
+Logs:
+
+```bash
+npm run logs
+```
+
+## Opção B — Desenvolvimento local
+
+```bash
+cp .env.example .env
+cp .env.example apps/api/.env
+npm install
+npm run db:up                 # só o Postgres
+npm run db:deploy
+npm run db:seed
+npm run dev:api               # terminal 1
+npm run dev:web               # terminal 2
+```
+
+- API: http://localhost:3001
+- Web: http://localhost:3000
+
+Para criar novas migrations: `npm run db:migrate`.
 
 ### Contas seed
 
@@ -40,32 +67,21 @@ Senha de todas: `Demo@2026`
 
 Há ao menos um evento publicado (“Clube da Luta”) com capacidade disponível.
 
-## Rodar em desenvolvimento
-
-Em terminais separados:
-
-```bash
-npm run dev:api
-npm run dev:web
-```
-
-- API: http://localhost:3001
-- Web: http://localhost:3000
-
 ## Scripts úteis
 
 | Script | Descrição |
 | --- | --- |
-| `npm run db:up` | Sobe o PostgreSQL |
-| `npm run db:down` | Para o PostgreSQL |
-| `npm run db:deploy` | Aplica migrations existentes (CI / setup) |
-| `npm run db:migrate` | Cria/aplica migrations em desenvolvimento |
-| `npm run db:seed` | Popula usuários e evento demo |
-| `npm run db:studio` | Abre o Prisma Studio |
-| `npm run build` | Build da API e do Web |
+| `npm run up` | Build e sobe Postgres + API + Web |
+| `npm run down` | Para todos os containers |
+| `npm run logs` | Logs do Compose |
+| `npm run db:up` | Sobe só o PostgreSQL |
+| `npm run db:deploy` | Aplica migrations (local) |
+| `npm run db:seed` | Seed (local) |
+| `npm run db:studio` | Prisma Studio |
+| `npm run build` | Build local da API e do Web |
 | `npm run dev:api` | Nest em watch mode |
 | `npm run dev:web` | Next em modo dev |
 
 ## Status
 
-Etapa atual: **feat(db)** — schema Prisma (`users`, `events`, `reservations`, `tickets`), constraint de estoque e seed.
+Etapa atual: **feat(auth)** + stack completa no Docker Compose.
