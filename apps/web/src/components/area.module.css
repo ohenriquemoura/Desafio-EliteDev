@@ -5,7 +5,7 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 2rem;
-  max-width: 40rem;
+  max-width: 36rem;
   margin: 0 auto;
 }
 
@@ -15,27 +15,35 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #1a4d3e;
+  width: fit-content;
 }
 
 .title {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
   font-weight: 500;
-  line-height: 1.15;
   color: #122018;
 }
 
-.lead {
-  font-size: 1.05rem;
-  line-height: 1.5;
+.lead,
+.muted,
+.user {
   color: #3d5248;
+  line-height: 1.5;
 }
 
-.cta {
-  margin-top: 0.75rem;
+.user {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.logout {
+  margin-top: 1rem;
   width: fit-content;
-  background: #1a4d3e;
-  color: #f3eee4;
-  padding: 0.8rem 1.2rem;
-  font-size: 1rem;
+  border: 1px solid #1a4d3e;
+  background: transparent;
+  color: #1a4d3e;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  font-size: 0.95rem;
 }

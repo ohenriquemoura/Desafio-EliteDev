@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -6,9 +7,12 @@ export default function Home() {
       <p className={styles.brand}>Elite Dev</p>
       <h1 className={styles.title}>Eventos e ingressos</h1>
       <p className={styles.lead}>
-        Setup do monorepo. O fluxo de reserva, pagamento e portaria entra nas
-        próximas etapas.
+        Organize sessões a partir de filmes, reserve na pista e valide na
+        entrada.
       </p>
+      <Link className={styles.cta} href="/login">
+        Entrar
+      </Link>
     </main>
   );
 }
