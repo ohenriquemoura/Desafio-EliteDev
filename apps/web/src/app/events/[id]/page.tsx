@@ -93,9 +93,14 @@ export default function EventDetailPage() {
         <BrandLockup compact />
         <div className={styles.headerLinks}>
           {session?.user.role === "CLIENT" && (
-            <Link href="/reservations" className={styles.back}>
-              Minhas reservas
-            </Link>
+            <>
+              <Link href="/tickets" className={styles.back}>
+                Ingressos
+              </Link>
+              <Link href="/reservations" className={styles.back}>
+                Minhas reservas
+              </Link>
+            </>
           )}
           <Link href="/events" className={styles.back}>
             Voltar ao cartaz

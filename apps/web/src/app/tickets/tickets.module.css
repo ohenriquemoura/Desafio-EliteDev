@@ -1,0 +1,128 @@
+.main {
+  min-height: 100vh;
+  padding: 1.5rem 1.25rem 2.5rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  animation: fadeUp 0.5s ease both;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: flex-end;
+}
+
+.nav a {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--highlight);
+}
+
+.hero {
+  margin: 1.25rem 0 1rem;
+}
+
+.kicker {
+  color: var(--highlight);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 0.4rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.lead,
+.meta {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.inlineLink {
+  color: var(--highlight);
+  text-decoration: underline;
+}
+
+.list {
+  list-style: none;
+  margin-top: 0.5rem;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.2s ease;
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.card img,
+.posterFallback {
+  width: 74px;
+  height: 111px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+}
+
+.card h2 {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius);
+}
+
+.valid {
+  color: #9be15d;
+  border: 1px solid rgba(155, 225, 93, 0.4);
+  background: rgba(155, 225, 93, 0.08);
+}
+
+.used {
+  color: var(--danger);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  background: rgba(255, 107, 107, 0.08);
+}

@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { TicketsModule } from './tickets/tickets.module';
 import { TmdbModule } from './tmdb/tmdb.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { TmdbModule } from './tmdb/tmdb.module';
     TmdbModule,
     EventsModule,
     ReservationsModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

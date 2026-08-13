@@ -1,0 +1,10 @@
+.qr {
+  display: block;
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.placeholder {
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+}

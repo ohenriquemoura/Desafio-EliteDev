@@ -11,6 +11,7 @@ import {
   ReservationStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TicketsService } from '../tickets/tickets.service';
 import { CreateReservationDto, PayReservationDto } from './dto/reservation.dto';
 
 const HOLD_MINUTES = 15;
@@ -46,7 +47,10 @@ type EventLockRow = {
 
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ticketsService: TicketsService,
+  ) {}
 
   async create(clientId: string, dto: CreateReservationDto) {
     const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60_000);
@@ -171,11 +175,20 @@ export class ReservationsService {
         },
       });
 
-      return tx.reservation.update({
+      const paid = await tx.reservation.update({
         where: { id: reservation.id },
         data: { status: ReservationStatus.PAID },
         include: { event: { select: eventSelect } },
       });
+
+      await this.ticketsService.issueForReservation(tx, {
+        reservationId: paid.id,
+        eventId: paid.eventId,
+        clientId: paid.clientId,
+        quantity: paid.quantity,
+      });
+
+      return paid;
     });
 
     return this.toPublic(result);

@@ -49,6 +49,7 @@ export default function EventsPage() {
       <header className={styles.header}>
         <BrandLockup compact />
         <nav className={styles.nav}>
+          {isClient && <Link href="/tickets">Ingressos</Link>}
           {isClient && <Link href="/reservations">Minhas reservas</Link>}
           {isLoggedIn ? (
             <Link href="/login">Minha conta</Link>

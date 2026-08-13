@@ -88,7 +88,7 @@ export default function ReservationDetailPage() {
       setReservation(data);
       setMessage(
         outcome === "approve"
-          ? "Pagamento aprovado. Ingressos serão emitidos na próxima etapa."
+          ? "Pagamento aprovado. Seus ingressos já foram emitidos."
           : "Pagamento recusado. As vagas foram liberadas.",
       );
     } catch (err) {
@@ -118,6 +118,7 @@ export default function ReservationDetailPage() {
       <header className={styles.header}>
         <BrandLockup compact />
         <nav className={styles.nav}>
+          <Link href="/tickets">Ingressos</Link>
           <Link href="/reservations">Minhas reservas</Link>
           <Link href="/events">Cartaz</Link>
         </nav>
@@ -188,9 +189,12 @@ export default function ReservationDetailPage() {
                 </div>
               </div>
             ) : reservation.status === "PAID" ? (
-              <p className={styles.hint}>
-                Pagamento confirmado. A emissão do QR entra no próximo passo.
-              </p>
+              <div className={styles.hintBox}>
+                <p className={styles.hint}>Pagamento confirmado.</p>
+                <Link href="/tickets" className={styles.linkCta}>
+                  Ver meus ingressos
+                </Link>
+              </div>
             ) : (
               <Link href={`/events/${reservation.eventId}`} className={styles.linkCta}>
                 Reservar novamente

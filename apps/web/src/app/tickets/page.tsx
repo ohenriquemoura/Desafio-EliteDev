@@ -10,26 +10,14 @@ import {
   getAccessToken,
   getSession,
 } from "@/lib/auth";
-import { formatDateTime, formatPrice, POSTER_BASE } from "@/lib/events";
-import {
-  ReservationItem,
-  ReservationStatus,
-  reservationStatusLabel,
-} from "@/lib/reservations";
-import styles from "./reservations.module.css";
+import { formatDateTime, POSTER_BASE } from "@/lib/events";
+import { TicketItem, ticketStatusLabel } from "@/lib/tickets";
+import styles from "./tickets.module.css";
 
-const STATUS_CLASS: Record<ReservationStatus, string> = {
-  PENDING_PAYMENT: styles.status_PENDING_PAYMENT,
-  PAID: styles.status_PAID,
-  PAYMENT_FAILED: styles.status_PAYMENT_FAILED,
-  CANCELLED: styles.status_CANCELLED,
-  EXPIRED: styles.status_EXPIRED,
-};
-
-export default function ReservationsPage() {
+export default function TicketsPage() {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [items, setItems] = useState<ReservationItem[]>([]);
+  const [items, setItems] = useState<TicketItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +39,7 @@ export default function ReservationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<ReservationItem[]>("/reservations/mine", {
+      const data = await apiFetch<TicketItem[]>("/tickets/mine", {
         token: getAccessToken(),
       });
       setItems(data);
@@ -60,7 +48,7 @@ export default function ReservationsPage() {
       setError(
         err instanceof ApiError
           ? err.message
-          : "Não foi possível carregar suas reservas.",
+          : "Não foi possível carregar os ingressos.",
       );
     } finally {
       setLoading(false);
@@ -80,16 +68,16 @@ export default function ReservationsPage() {
       <header className={styles.header}>
         <BrandLockup compact />
         <nav className={styles.nav}>
-          <Link href="/tickets">Ingressos</Link>
+          <Link href="/reservations">Reservas</Link>
           <Link href="/events">Cartaz</Link>
         </nav>
       </header>
 
       <section className={styles.hero}>
         <p className={styles.kicker}>Cliente</p>
-        <h1 className={styles.title}>Minhas reservas</h1>
+        <h1 className={styles.title}>Meus ingressos</h1>
         <p className={styles.lead}>
-          Acompanhe o status e conclua o pagamento simulado.
+          QR para a portaria e link de compartilhamento.
         </p>
       </section>
 
@@ -98,7 +86,7 @@ export default function ReservationsPage() {
 
       {!loading && !error && items.length === 0 && (
         <p className={styles.meta}>
-          Nenhuma reserva ainda.{" "}
+          Nenhum ingresso ainda.{" "}
           <Link href="/events" className={styles.inlineLink}>
             Ver cartaz
           </Link>
@@ -108,7 +96,7 @@ export default function ReservationsPage() {
       <ul className={styles.list}>
         {items.map((item) => (
           <li key={item.id}>
-            <Link href={`/reservations/${item.id}`} className={styles.card}>
+            <Link href={`/tickets/${item.id}`} className={styles.card}>
               {item.event.posterPath ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -125,11 +113,12 @@ export default function ReservationsPage() {
                 <p className={styles.meta}>
                   {formatDateTime(item.event.startsAt)} · {item.event.venue}
                 </p>
-                <p className={styles.meta}>
-                  {item.quantity} ingresso(s) · {formatPrice(item.amountCents)}
-                </p>
-                <p className={`${styles.badge} ${STATUS_CLASS[item.status]}`}>
-                  {reservationStatusLabel(item.status)}
+                <p
+                  className={`${styles.badge} ${
+                    item.status === "USED" ? styles.used : styles.valid
+                  }`}
+                >
+                  {ticketStatusLabel(item.status)}
                 </p>
               </div>
             </Link>
