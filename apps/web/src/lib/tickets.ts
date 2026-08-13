@@ -5,6 +5,7 @@ export type TicketItem = {
   eventId: string;
   reservationId: string;
   status: TicketStatus;
+  seatLabel: string | null;
   code: string;
   shareToken: string;
   usedAt: string | null;
@@ -20,6 +21,7 @@ export type TicketItem = {
 
 export type SharedTicket = {
   status: TicketStatus;
+  seatLabel: string | null;
   code: string;
   usedAt: string | null;
   event: {

@@ -1,0 +1,218 @@
+.main {
+  min-height: 100vh;
+  padding: 1.5rem 1.25rem 2.5rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  margin-top: 0.75rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.user,
+.meta {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.logout,
+.secondary,
+.primary {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.logout,
+.secondary {
+  border: 1px solid rgba(239, 201, 12, 0.35);
+  background: rgba(239, 201, 12, 0.08);
+  color: var(--highlight);
+  padding: 0.65rem 0.95rem;
+  font-size: 0.8rem;
+}
+
+.logout:hover,
+.secondary:hover:not(:disabled) {
+  background: rgba(239, 201, 12, 0.16);
+  border-color: var(--highlight);
+}
+
+.secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.panel,
+.scanSection,
+.manual {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.scanHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scanHeader h2 {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field span {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--highlight);
+}
+
+.field select,
+.field input {
+  border: 1px solid var(--line);
+  background: #0f0e0b;
+  color: var(--fg);
+  padding: 0.8rem 0.85rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+}
+
+.field select:focus,
+.field input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.scanner {
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #0a0908;
+}
+
+.scannerActive {
+  min-height: 280px;
+  border: 1px solid var(--line);
+}
+
+.scanner :global(video) {
+  width: 100% !important;
+  border-radius: var(--radius);
+}
+
+.primary {
+  border: 1px solid rgba(255, 57, 57, 0.55);
+  background: var(--accent);
+  color: #fff;
+  min-height: 3rem;
+  padding: 0.8rem 1rem;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: #ff5c5c;
+  box-shadow: 0 0 12px rgba(255, 57, 57, 0.28);
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.result {
+  padding: 1rem 1.05rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.resultLabel {
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resultMessage {
+  margin-top: 0.35rem;
+  line-height: 1.45;
+}
+
+.seatResult {
+  margin-top: 0.55rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resultValid {
+  border-color: rgba(155, 225, 93, 0.45);
+  background: rgba(155, 225, 93, 0.1);
+  color: #9be15d;
+}
+
+.resultUsed {
+  border-color: rgba(239, 201, 12, 0.45);
+  background: rgba(239, 201, 12, 0.1);
+  color: var(--highlight);
+}
+
+.resultInvalid {
+  border-color: rgba(255, 107, 107, 0.45);
+  background: rgba(255, 107, 107, 0.1);
+  color: var(--danger);
+}
+
+.resultWrong {
+  border-color: rgba(120, 170, 255, 0.45);
+  background: rgba(120, 170, 255, 0.1);
+  color: #8eb6ff;
+}

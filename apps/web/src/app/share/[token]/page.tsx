@@ -66,6 +66,9 @@ export default function ShareTicketPage() {
             <p className={styles.meta}>
               {formatDateTime(ticket.event.startsAt)} · {ticket.event.venue}
             </p>
+            {ticket.seatLabel && (
+              <p className={styles.seat}>Cadeira {ticket.seatLabel}</p>
+            )}
             <p
               className={`${styles.badge} ${
                 ticket.status === "USED" ? styles.used : styles.valid

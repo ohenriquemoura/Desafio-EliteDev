@@ -54,7 +54,7 @@ export function AuthArea({ expectedRole, title, description }: Props) {
         className={styles.logout}
         onClick={() => {
           clearSession();
-          router.replace("/login");
+          router.replace("/");
         }}
       >
         Sair

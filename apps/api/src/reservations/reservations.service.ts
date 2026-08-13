@@ -9,8 +9,10 @@ import {
   Prisma,
   Reservation,
   ReservationStatus,
+  SeatStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsService } from '../events/events.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { CreateReservationDto, PayReservationDto } from './dto/reservation.dto';
 
@@ -25,7 +27,15 @@ const eventSelect = {
   priceCents: true,
 } as const;
 
-type ReservationWithEvent = Reservation & {
+const seatSelect = {
+  id: true,
+  label: true,
+  rowLabel: true,
+  number: true,
+  status: true,
+} as const;
+
+type ReservationWithRelations = Reservation & {
   event: {
     id: string;
     title: string;
@@ -34,6 +44,13 @@ type ReservationWithEvent = Reservation & {
     posterPath: string | null;
     priceCents: number;
   };
+  seats: Array<{
+    id: string;
+    label: string;
+    rowLabel: string;
+    number: number;
+    status: SeatStatus;
+  }>;
 };
 
 type EventLockRow = {
@@ -50,10 +67,20 @@ export class ReservationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ticketsService: TicketsService,
+    private readonly eventsService: EventsService,
   ) {}
 
   async create(clientId: string, dto: CreateReservationDto) {
     const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60_000);
+    const quantity = dto.seatIds.length;
+
+    const published = await this.prisma.event.findUnique({
+      where: { id: dto.eventId },
+    });
+    if (!published || published.status !== EventStatus.PUBLISHED) {
+      throw new NotFoundException('Evento não encontrado');
+    }
+    await this.eventsService.ensureSeats(published);
 
     const reservation = await this.prisma.$transaction(async (tx) => {
       const rows = await tx.$queryRaw<EventLockRow[]>`
@@ -68,8 +95,34 @@ export class ReservationsService {
         throw new NotFoundException('Evento não encontrado');
       }
 
+      await tx.$queryRaw`
+        SELECT id FROM seats
+        WHERE "eventId" = ${dto.eventId}::uuid
+        FOR UPDATE
+      `;
+
+      const seats = await tx.seat.findMany({
+        where: { id: { in: dto.seatIds } },
+        orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+      });
+
+      if (seats.length !== dto.seatIds.length) {
+        throw new BadRequestException('Uma ou mais cadeiras são inválidas');
+      }
+
+      for (const seat of seats) {
+        if (seat.eventId !== event.id) {
+          throw new BadRequestException('Cadeira não pertence a este evento');
+        }
+        if (seat.status !== SeatStatus.AVAILABLE) {
+          throw new BadRequestException(
+            `Cadeira ${seat.label} não está disponível`,
+          );
+        }
+      }
+
       const available = event.capacity - event.heldCount - event.soldCount;
-      if (dto.quantity > available) {
+      if (quantity > available) {
         throw new BadRequestException(
           available <= 0
             ? 'Evento esgotado'
@@ -77,21 +130,40 @@ export class ReservationsService {
         );
       }
 
-      await tx.event.update({
-        where: { id: event.id },
-        data: { heldCount: { increment: dto.quantity } },
-      });
-
-      return tx.reservation.create({
+      const created = await tx.reservation.create({
         data: {
           eventId: event.id,
           clientId,
-          quantity: dto.quantity,
-          amountCents: event.priceCents * dto.quantity,
+          quantity,
+          seatLabels: seats.map((seat) => seat.label),
+          amountCents: event.priceCents * quantity,
           status: ReservationStatus.PENDING_PAYMENT,
           expiresAt,
         },
-        include: { event: { select: eventSelect } },
+      });
+
+      await tx.seat.updateMany({
+        where: { id: { in: dto.seatIds } },
+        data: {
+          status: SeatStatus.HELD,
+          reservationId: created.id,
+        },
+      });
+
+      await tx.event.update({
+        where: { id: event.id },
+        data: { heldCount: { increment: quantity } },
+      });
+
+      return tx.reservation.findUniqueOrThrow({
+        where: { id: created.id },
+        include: {
+          event: { select: eventSelect },
+          seats: {
+            select: seatSelect,
+            orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+          },
+        },
       });
     });
 
@@ -102,10 +174,16 @@ export class ReservationsService {
     const reservations = await this.prisma.reservation.findMany({
       where: { clientId },
       orderBy: { createdAt: 'desc' },
-      include: { event: { select: eventSelect } },
+      include: {
+        event: { select: eventSelect },
+        seats: {
+          select: seatSelect,
+          orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+        },
+      },
     });
 
-    const refreshed: ReservationWithEvent[] = [];
+    const refreshed: ReservationWithRelations[] = [];
     for (const reservation of reservations) {
       refreshed.push(await this.ensureFresh(reservation));
     }
@@ -121,7 +199,13 @@ export class ReservationsService {
     const result = await this.prisma.$transaction(async (tx) => {
       const reservation = await tx.reservation.findUnique({
         where: { id },
-        include: { event: { select: eventSelect } },
+        include: {
+          event: { select: eventSelect },
+          seats: {
+            select: seatSelect,
+            orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+          },
+        },
       });
 
       if (!reservation) {
@@ -163,7 +247,13 @@ export class ReservationsService {
         return tx.reservation.update({
           where: { id: reservation.id },
           data: { status: ReservationStatus.PAYMENT_FAILED },
-          include: { event: { select: eventSelect } },
+          include: {
+            event: { select: eventSelect },
+            seats: {
+              select: seatSelect,
+              orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+            },
+          },
         });
       }
 
@@ -178,17 +268,49 @@ export class ReservationsService {
       const paid = await tx.reservation.update({
         where: { id: reservation.id },
         data: { status: ReservationStatus.PAID },
-        include: { event: { select: eventSelect } },
+        include: {
+          event: { select: eventSelect },
+          seats: {
+            select: seatSelect,
+            orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+          },
+        },
       });
 
-      await this.ticketsService.issueForReservation(tx, {
+      const tickets = await this.ticketsService.issueForReservation(tx, {
         reservationId: paid.id,
         eventId: paid.eventId,
         clientId: paid.clientId,
-        quantity: paid.quantity,
+        seats: paid.seats.map((seat) => ({
+          id: seat.id,
+          label: seat.label,
+        })),
       });
 
-      return paid;
+      for (const ticket of tickets) {
+        if (!ticket.seatLabel) continue;
+        const seat = paid.seats.find((item) => item.label === ticket.seatLabel);
+        if (!seat) continue;
+        await tx.seat.update({
+          where: { id: seat.id },
+          data: {
+            status: SeatStatus.SOLD,
+            ticketId: ticket.id,
+            reservationId: paid.id,
+          },
+        });
+      }
+
+      return tx.reservation.findUniqueOrThrow({
+        where: { id: paid.id },
+        include: {
+          event: { select: eventSelect },
+          seats: {
+            select: seatSelect,
+            orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+          },
+        },
+      });
     });
 
     return this.toPublic(result);
@@ -197,7 +319,13 @@ export class ReservationsService {
   private async findOwned(clientId: string, id: string) {
     const reservation = await this.prisma.reservation.findUnique({
       where: { id },
-      include: { event: { select: eventSelect } },
+      include: {
+        event: { select: eventSelect },
+        seats: {
+          select: seatSelect,
+          orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+        },
+      },
     });
 
     if (!reservation) {
@@ -211,8 +339,8 @@ export class ReservationsService {
   }
 
   private async ensureFresh(
-    reservation: ReservationWithEvent,
-  ): Promise<ReservationWithEvent> {
+    reservation: ReservationWithRelations,
+  ): Promise<ReservationWithRelations> {
     if (
       reservation.status !== ReservationStatus.PENDING_PAYMENT ||
       !reservation.expiresAt ||
@@ -224,6 +352,9 @@ export class ReservationsService {
     return this.prisma.$transaction(async (tx) => {
       const current = await tx.reservation.findUnique({
         where: { id: reservation.id },
+        include: {
+          seats: { select: { id: true, label: true, rowLabel: true, number: true, status: true } },
+        },
       });
       if (!current || current.status !== ReservationStatus.PENDING_PAYMENT) {
         return reservation;
@@ -233,22 +364,39 @@ export class ReservationsService {
       return tx.reservation.update({
         where: { id: current.id },
         data: { status: ReservationStatus.EXPIRED },
-        include: { event: { select: eventSelect } },
+        include: {
+          event: { select: eventSelect },
+          seats: {
+            select: seatSelect,
+            orderBy: [{ rowLabel: 'asc' }, { number: 'asc' }],
+          },
+        },
       });
     });
   }
 
   private async releaseHold(
     tx: Prisma.TransactionClient,
-    reservation: Pick<Reservation, 'eventId' | 'quantity'>,
+    reservation: Pick<Reservation, 'id' | 'eventId' | 'quantity'>,
   ) {
+    await tx.seat.updateMany({
+      where: {
+        reservationId: reservation.id,
+        status: SeatStatus.HELD,
+      },
+      data: {
+        status: SeatStatus.AVAILABLE,
+        reservationId: null,
+      },
+    });
+
     await tx.event.update({
       where: { id: reservation.eventId },
       data: { heldCount: { decrement: reservation.quantity } },
     });
   }
 
-  private toPublic(reservation: ReservationWithEvent) {
+  private toPublic(reservation: ReservationWithRelations) {
     return {
       id: reservation.id,
       eventId: reservation.eventId,
@@ -259,6 +407,16 @@ export class ReservationsService {
       expiresAt: reservation.expiresAt?.toISOString() ?? null,
       createdAt: reservation.createdAt.toISOString(),
       updatedAt: reservation.updatedAt.toISOString(),
+      seats: reservation.seatLabels.map((label) => {
+        const live = reservation.seats.find((seat) => seat.label === label);
+        return {
+          id: live?.id ?? null,
+          label,
+          rowLabel: live?.rowLabel ?? label.charAt(0),
+          number: live?.number ?? (Number(label.slice(1)) || 0),
+          status: live?.status ?? null,
+        };
+      }),
       event: {
         id: reservation.event.id,
         title: reservation.event.title,

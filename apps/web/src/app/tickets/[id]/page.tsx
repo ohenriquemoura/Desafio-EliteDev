@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { BrandLockup } from "@/components/BrandLockup";
+import { SiteHeader } from "@/components/SiteHeader";
 import { TicketQr } from "@/components/TicketQr";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
@@ -81,13 +81,7 @@ export default function TicketDetailPage() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <BrandLockup compact />
-        <nav className={styles.nav}>
-          <Link href="/tickets">Meus ingressos</Link>
-          <Link href="/events">Cartaz</Link>
-        </nav>
-      </header>
+      <SiteHeader showClientLinks />
 
       {loading && <p className={styles.meta}>Carregando…</p>}
       {error && <p className={styles.error}>{error}</p>}
@@ -106,6 +100,9 @@ export default function TicketDetailPage() {
             <p className={styles.meta}>
               {formatDateTime(ticket.event.startsAt)} · {ticket.event.venue}
             </p>
+            {ticket.seatLabel && (
+              <p className={styles.seat}>Cadeira {ticket.seatLabel}</p>
+            )}
             <p
               className={`${styles.badge} ${
                 ticket.status === "USED" ? styles.used : styles.valid

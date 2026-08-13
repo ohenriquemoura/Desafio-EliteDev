@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrandLockup } from "@/components/BrandLockup";
+import { SiteHeader } from "@/components/SiteHeader";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   AuthSession,
@@ -77,13 +77,7 @@ export default function ReservationsPage() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <BrandLockup compact />
-        <nav className={styles.nav}>
-          <Link href="/tickets">Ingressos</Link>
-          <Link href="/events">Cartaz</Link>
-        </nav>
-      </header>
+      <SiteHeader showClientLinks />
 
       <section className={styles.hero}>
         <p className={styles.kicker}>Cliente</p>
@@ -127,6 +121,9 @@ export default function ReservationsPage() {
                 </p>
                 <p className={styles.meta}>
                   {item.quantity} ingresso(s) · {formatPrice(item.amountCents)}
+                  {item.seats.length > 0
+                    ? ` · ${item.seats.map((seat) => seat.label).join(", ")}`
+                    : ""}
                 </p>
                 <p className={`${styles.badge} ${STATUS_CLASS[item.status]}`}>
                   {reservationStatusLabel(item.status)}

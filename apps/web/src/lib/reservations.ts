@@ -5,6 +5,14 @@ export type ReservationStatus =
   | "CANCELLED"
   | "EXPIRED";
 
+export type ReservationSeat = {
+  id: string | null;
+  label: string;
+  rowLabel: string;
+  number: number;
+  status: "AVAILABLE" | "HELD" | "SOLD" | null;
+};
+
 export type ReservationItem = {
   id: string;
   eventId: string;
@@ -15,6 +23,7 @@ export type ReservationItem = {
   expiresAt: string | null;
   createdAt: string;
   updatedAt: string;
+  seats: ReservationSeat[];
   event: {
     id: string;
     title: string;

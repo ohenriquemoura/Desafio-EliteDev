@@ -33,6 +33,11 @@ export class EventsController {
     return this.eventsService.listMine(user.id);
   }
 
+  @Get(':id/seats')
+  listSeats(@Param('id', ParseUUIDPipe) id: string) {
+    return this.eventsService.listSeats(id);
+  }
+
   @Get(':id')
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.eventsService.getById(id);

@@ -39,12 +39,12 @@ export class TicketsService {
       reservationId: string;
       eventId: string;
       clientId: string;
-      quantity: number;
+      seats: Array<{ id: string; label: string }>;
     },
   ) {
     const tickets: Ticket[] = [];
 
-    for (let i = 0; i < input.quantity; i += 1) {
+    for (const seat of input.seats) {
       const id = newTicketId();
       const code = buildTicketCode(id, input.eventId);
       const shareToken = newShareToken();
@@ -55,6 +55,7 @@ export class TicketsService {
           eventId: input.eventId,
           reservationId: input.reservationId,
           clientId: input.clientId,
+          seatLabel: seat.label,
           code,
           shareToken,
           status: TicketStatus.ISSUED,
@@ -110,6 +111,7 @@ export class TicketsService {
       eventId: ticket.eventId,
       reservationId: ticket.reservationId,
       status: ticket.status,
+      seatLabel: ticket.seatLabel,
       code: ticket.code,
       shareToken: ticket.shareToken,
       usedAt: ticket.usedAt?.toISOString() ?? null,
@@ -127,6 +129,7 @@ export class TicketsService {
   private toShared(ticket: TicketWithEvent) {
     return {
       status: ticket.status,
+      seatLabel: ticket.seatLabel,
       code: ticket.code,
       usedAt: ticket.usedAt?.toISOString() ?? null,
       event: {

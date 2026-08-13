@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { BrandLockup } from "@/components/BrandLockup";
+import { SiteHeader } from "@/components/SiteHeader";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   AuthSession,
@@ -115,14 +115,7 @@ export default function ReservationDetailPage() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <BrandLockup compact />
-        <nav className={styles.nav}>
-          <Link href="/tickets">Ingressos</Link>
-          <Link href="/reservations">Minhas reservas</Link>
-          <Link href="/events">Cartaz</Link>
-        </nav>
-      </header>
+      <SiteHeader showClientLinks />
 
       {loading && <p className={styles.meta}>Carregando…</p>}
       {error && <p className={styles.error}>{error}</p>}
@@ -154,6 +147,11 @@ export default function ReservationDetailPage() {
               {reservation.quantity} ingresso(s) ·{" "}
               {formatPrice(reservation.amountCents)}
             </p>
+            {reservation.seats.length > 0 && (
+              <p className={styles.meta}>
+                Cadeiras: {reservation.seats.map((seat) => seat.label).join(", ")}
+              </p>
+            )}
             <p className={`${styles.badge} ${STATUS_CLASS[reservation.status]}`}>
               {reservationStatusLabel(reservation.status)}
             </p>

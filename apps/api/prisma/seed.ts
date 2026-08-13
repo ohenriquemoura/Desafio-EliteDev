@@ -1,9 +1,38 @@
-import { PrismaClient, Role, EventStatus } from '@prisma/client';
+import { PrismaClient, Role, EventStatus, SeatStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 const SEED_PASSWORD = 'Demo@2026';
+const ROW_LABELS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const SEATS_PER_ROW = 10;
+
+function buildSeatPlan(capacity: number) {
+  return Array.from({ length: capacity }, (_, index) => {
+    const rowLabel = ROW_LABELS[Math.floor(index / SEATS_PER_ROW)];
+    const number = (index % SEATS_PER_ROW) + 1;
+    return {
+      rowLabel,
+      number,
+      label: `${rowLabel}${number}`,
+    };
+  });
+}
+
+async function ensureEventSeats(eventId: string, capacity: number) {
+  const count = await prisma.seat.count({ where: { eventId } });
+  if (count > 0) return;
+
+  await prisma.seat.createMany({
+    data: buildSeatPlan(capacity).map((seat) => ({
+      eventId,
+      rowLabel: seat.rowLabel,
+      number: seat.number,
+      label: seat.label,
+      status: SeatStatus.AVAILABLE,
+    })),
+  });
+}
 
 async function main() {
   const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
@@ -52,7 +81,7 @@ async function main() {
     },
   });
 
-  const existingEvent = await prisma.event.findFirst({
+  let event = await prisma.event.findFirst({
     where: {
       organizerId: organizer.id,
       tmdbMovieId: 550,
@@ -60,12 +89,12 @@ async function main() {
     },
   });
 
-  if (!existingEvent) {
+  if (!event) {
     const startsAt = new Date();
     startsAt.setDate(startsAt.getDate() + 14);
     startsAt.setHours(20, 0, 0, 0);
 
-    await prisma.event.create({
+    event = await prisma.event.create({
       data: {
         organizerId: organizer.id,
         tmdbMovieId: 550,
@@ -82,6 +111,16 @@ async function main() {
         status: EventStatus.PUBLISHED,
       },
     });
+  }
+
+  await ensureEventSeats(event.id, event.capacity);
+
+  // Garante mapa para qualquer outro evento publicado sem assentos
+  const published = await prisma.event.findMany({
+    where: { status: EventStatus.PUBLISHED },
+  });
+  for (const item of published) {
+    await ensureEventSeats(item.id, item.capacity);
   }
 
   console.log('Seed concluído.');

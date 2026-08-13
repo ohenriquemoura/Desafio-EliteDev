@@ -51,6 +51,16 @@
   line-height: 1.5;
 }
 
+.seat {
+  margin-top: 0.65rem;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--highlight);
+}
+
 .error {
   color: var(--danger);
 }

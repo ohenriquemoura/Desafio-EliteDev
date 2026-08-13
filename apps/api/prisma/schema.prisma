@@ -32,6 +32,12 @@ enum TicketStatus {
   USED
 }
 
+enum SeatStatus {
+  AVAILABLE
+  HELD
+  SOLD
+}
+
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   name         String
@@ -70,6 +76,7 @@ model Event {
 
   reservations Reservation[]
   tickets      Ticket[]
+  seats        Seat[]
 
   @@index([status, startsAt])
   @@index([organizerId])
@@ -83,6 +90,8 @@ model Reservation {
   clientId    String            @db.Uuid
   client      User              @relation(fields: [clientId], references: [id], onDelete: Restrict)
   quantity    Int
+  /// Snapshot das cadeiras escolhidas (ex.: ["A1","A2"])
+  seatLabels  String[]          @default([])
   status      ReservationStatus @default(PENDING_PAYMENT)
   amountCents Int
   createdAt   DateTime          @default(now())
@@ -90,10 +99,32 @@ model Reservation {
   expiresAt   DateTime?
 
   tickets Ticket[]
+  seats   Seat[]
 
   @@index([eventId, status])
   @@index([clientId])
   @@map("reservations")
+}
+
+model Seat {
+  id            String     @id @default(uuid()) @db.Uuid
+  eventId       String     @db.Uuid
+  event         Event      @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  rowLabel      String
+  number        Int
+  label         String
+  status        SeatStatus @default(AVAILABLE)
+  reservationId String?    @db.Uuid
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  ticketId      String?    @unique @db.Uuid
+  ticket        Ticket?    @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([eventId, rowLabel, number])
+  @@index([eventId, status])
+  @@index([reservationId])
+  @@map("seats")
 }
 
 model Ticket {
@@ -104,6 +135,8 @@ model Ticket {
   reservation   Reservation  @relation(fields: [reservationId], references: [id], onDelete: Restrict)
   clientId      String       @db.Uuid
   client        User         @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  /// Ex.: A12
+  seatLabel     String?
   /// Código opaco verificável (HMAC); exibido no QR
   code          String       @unique
   /// Token para link público de compartilhamento
@@ -112,6 +145,8 @@ model Ticket {
   usedAt        DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  seat Seat?
 
   @@index([eventId, status])
   @@index([clientId])

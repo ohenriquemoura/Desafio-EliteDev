@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLockup } from "@/components/BrandLockup";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   AuthSession,
+  getSession,
   homeForRole,
   saveSession,
 } from "@/lib/auth";
@@ -21,6 +22,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const session = getSession();
+    if (session) {
+      router.replace(homeForRole(session.user.role));
+    }
+  }, [router]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

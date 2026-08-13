@@ -235,6 +235,13 @@
   font-size: 0.9rem;
 }
 
+.myActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: flex-end;
+}
+
 .myActions a,
 .myActions button {
   border: none;
@@ -247,6 +254,50 @@
   text-transform: uppercase;
   cursor: pointer;
   text-decoration: underline;
+}
+
+.capacityEdit {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.capacityEdit input {
+  width: 6rem;
+  border: 1px solid var(--line);
+  background: #0f0e0b;
+  color: var(--fg);
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+}
+
+.capacityEdit button {
+  border: 1px solid rgba(239, 201, 12, 0.35);
+  background: rgba(239, 201, 12, 0.08);
+  color: var(--highlight);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius);
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.capacityHint {
+  width: 100%;
+  margin-top: 0.2rem;
+  color: var(--highlight);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  line-height: 1.4;
 }
 
 .createForm {

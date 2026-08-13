@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BrandLockup } from "@/components/BrandLockup";
+import { SiteHeader } from "@/components/SiteHeader";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   EventItem,
@@ -10,20 +10,14 @@ import {
   formatDateTime,
   formatPrice,
 } from "@/lib/events";
-import { getSession } from "@/lib/auth";
 import styles from "./events.module.css";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    const session = getSession();
-    setIsLoggedIn(Boolean(session));
-    setIsClient(session?.user.role === "CLIENT");
     void loadEvents();
   }, []);
 
@@ -46,18 +40,7 @@ export default function EventsPage() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <BrandLockup compact />
-        <nav className={styles.nav}>
-          {isClient && <Link href="/tickets">Ingressos</Link>}
-          {isClient && <Link href="/reservations">Minhas reservas</Link>}
-          {isLoggedIn ? (
-            <Link href="/login">Minha conta</Link>
-          ) : (
-            <Link href="/login">Entrar</Link>
-          )}
-        </nav>
-      </header>
+      <SiteHeader showClientLinks />
 
       <section className={styles.hero}>
         <p className={styles.kicker}>Em cartaz</p>
@@ -89,14 +72,14 @@ export default function EventsPage() {
               ) : (
                 <div className={styles.posterFallback} aria-hidden />
               )}
-              <div className={styles.body}>
+              <div>
                 <h2>{event.title}</h2>
-                <p>{formatDateTime(event.startsAt)}</p>
-                <p>{event.venue}</p>
+                <p className={styles.meta}>
+                  {formatDateTime(event.startsAt)} · {event.venue}
+                </p>
                 <p className={styles.price}>{formatPrice(event.priceCents)}</p>
                 <p className={styles.seats}>
-                  {event.availableSeats} vaga
-                  {event.availableSeats === 1 ? "" : "s"}
+                  {event.availableSeats} vagas disponíveis
                 </p>
               </div>
             </Link>

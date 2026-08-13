@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   Min,
   MinLength,
 } from 'class-validator';
@@ -23,6 +24,7 @@ export class CreateEventDto {
 
   @IsInt()
   @Min(1)
+  @Max(260)
   capacity!: number;
 
   @IsInt()
@@ -47,6 +49,7 @@ export class UpdateEventDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(260)
   capacity?: number;
 
   @IsOptional()

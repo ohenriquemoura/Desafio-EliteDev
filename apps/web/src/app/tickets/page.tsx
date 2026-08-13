@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrandLockup } from "@/components/BrandLockup";
+import { SiteHeader } from "@/components/SiteHeader";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
   AuthSession,
@@ -65,13 +65,7 @@ export default function TicketsPage() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <BrandLockup compact />
-        <nav className={styles.nav}>
-          <Link href="/reservations">Reservas</Link>
-          <Link href="/events">Cartaz</Link>
-        </nav>
-      </header>
+      <SiteHeader showClientLinks />
 
       <section className={styles.hero}>
         <p className={styles.kicker}>Cliente</p>
@@ -112,6 +106,7 @@ export default function TicketsPage() {
                 <h2>{item.event.title}</h2>
                 <p className={styles.meta}>
                   {formatDateTime(item.event.startsAt)} · {item.event.venue}
+                  {item.seatLabel ? ` · Cadeira ${item.seatLabel}` : ""}
                 </p>
                 <p
                   className={`${styles.badge} ${

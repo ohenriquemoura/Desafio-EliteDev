@@ -36,6 +36,21 @@ type TmdbList = {
 
 type ViewMode = "carousel" | "list";
 
+const SEATS_PER_ROW = 10;
+const MAX_CAPACITY = 260;
+
+function seatMapPreview(capacity: number) {
+  const safe = Math.max(0, Math.min(MAX_CAPACITY, Math.floor(capacity) || 0));
+  if (safe < 1) {
+    return "Informe a capacidade para gerar o mapa de cadeiras.";
+  }
+  const rows = Math.ceil(safe / SEATS_PER_ROW);
+  const lastRowSeats = safe % SEATS_PER_ROW || SEATS_PER_ROW;
+  return `Mapa: ${safe} cadeiras · ${rows} fileira(s) · até ${SEATS_PER_ROW} por fileira${
+    lastRowSeats !== SEATS_PER_ROW ? ` (última com ${lastRowSeats})` : ""
+  }.`;
+}
+
 function defaultStartsAt() {
   const date = new Date();
   date.setDate(date.getDate() + 7);
@@ -57,6 +72,11 @@ export default function OrganizerPage() {
   const [venue, setVenue] = useState("Cine Elite — Sala 1, São Paulo");
   const [startsAt, setStartsAt] = useState(defaultStartsAt());
   const [capacity, setCapacity] = useState(100);
+  const [editingCapacityId, setEditingCapacityId] = useState<string | null>(
+    null,
+  );
+  const [editingCapacityValue, setEditingCapacityValue] = useState(100);
+  const [updatingCapacity, setUpdatingCapacity] = useState(false);
   const [priceReais, setPriceReais] = useState("45.00");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -218,6 +238,32 @@ export default function OrganizerPage() {
     }
   }
 
+  async function updateCapacity(eventId: string) {
+    setUpdatingCapacity(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const updated = await apiFetch<EventItem>(`/events/${eventId}`, {
+        method: "PATCH",
+        token: getAccessToken(),
+        body: JSON.stringify({ capacity: editingCapacityValue }),
+      });
+      setSuccess(
+        `Mapa atualizado: ${updated.capacity} cadeiras para “${updated.title}”.`,
+      );
+      setEditingCapacityId(null);
+      await loadMine();
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Não foi possível atualizar a capacidade.",
+      );
+    } finally {
+      setUpdatingCapacity(false);
+    }
+  }
+
   function openCreate(movie: TmdbMovie) {
     setSelected(movie);
     setSuccess(null);
@@ -259,7 +305,7 @@ export default function OrganizerPage() {
             className={styles.logout}
             onClick={() => {
               clearSession();
-              router.replace("/login");
+              router.replace("/");
             }}
           >
             Sair
@@ -316,6 +362,43 @@ export default function OrganizerPage() {
                       {formatPrice(event.priceCents)} · {event.availableSeats}/
                       {event.capacity} vagas · {event.status}
                     </p>
+                    {editingCapacityId === event.id ? (
+                      <div className={styles.capacityEdit}>
+                        <input
+                          type="number"
+                          min={1}
+                          max={MAX_CAPACITY}
+                          value={editingCapacityValue}
+                          onChange={(e) =>
+                            setEditingCapacityValue(
+                              Math.max(
+                                1,
+                                Math.min(
+                                  MAX_CAPACITY,
+                                  Number(e.target.value) || 1,
+                                ),
+                              ),
+                            )
+                          }
+                        />
+                        <button
+                          type="button"
+                          disabled={updatingCapacity}
+                          onClick={() => void updateCapacity(event.id)}
+                        >
+                          {updatingCapacity ? "Salvando…" : "Salvar mapa"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingCapacityId(null)}
+                        >
+                          Cancelar
+                        </button>
+                        <p className={styles.capacityHint}>
+                          {seatMapPreview(editingCapacityValue)}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                   <div className={styles.myActions}>
                     {event.status === "PUBLISHED" ? (
@@ -328,6 +411,15 @@ export default function OrganizerPage() {
                         Publicar
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCapacityId(event.id);
+                        setEditingCapacityValue(event.capacity);
+                      }}
+                    >
+                      Capacidade
+                    </button>
                   </div>
                 </li>
               ))}
@@ -510,10 +602,21 @@ export default function OrganizerPage() {
                 <input
                   type="number"
                   min={1}
+                  max={MAX_CAPACITY}
                   value={capacity}
-                  onChange={(e) => setCapacity(Number(e.target.value))}
+                  onChange={(e) =>
+                    setCapacity(
+                      Math.max(
+                        1,
+                        Math.min(MAX_CAPACITY, Number(e.target.value) || 1),
+                      ),
+                    )
+                  }
                   required
                 />
+                <small className={styles.capacityHint}>
+                  {seatMapPreview(capacity)}
+                </small>
               </label>
               <label className={styles.field}>
                 <span>Preço (R$)</span>
