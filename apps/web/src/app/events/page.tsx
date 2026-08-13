@@ -45,9 +45,9 @@ export default function EventsPage() {
       <section className={styles.hero}>
         <p className={styles.kicker}>Em cartaz</p>
         <h1 className={styles.title}>Eventos publicados</h1>
-        <p className={styles.lead}>
+        {/* <p className={styles.lead}>
           Escolha a sessão, reserve na pista e garanta seu ingresso.
-        </p>
+        </p> */}
       </section>
 
       {loading && <p className={styles.meta}>Carregando cartaz…</p>}
