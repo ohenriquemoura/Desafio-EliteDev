@@ -33,5 +33,6 @@ COPY apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
 WORKDIR /app/apps/api
 RUN chmod +x ./docker-entrypoint.sh
 
-EXPOSE 3001
+# Não fixe EXPOSE 3001: o Railway injeta PORT em runtime e o domínio
+# público precisa apontar para essa mesma porta (senão → 502 connection refused).
 ENTRYPOINT ["./docker-entrypoint.sh"]
