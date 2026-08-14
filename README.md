@@ -2,6 +2,15 @@
 
 Plataforma em que o **organizador** publica sessões a partir do catálogo **TMDb**, o **cliente** escolhe cadeiras, paga de forma simulada e recebe ingresso com **QR**, e a **portaria** valida o código na entrada (câmera ou digitação).
 
+### Aplicação publicada
+
+| Camada | URL |
+| --- | --- |
+| **Web** | [https://desafio-elite-dev-pied.vercel.app](https://desafio-elite-dev-pied.vercel.app) |
+| **API** | [https://desafio-elitedev-production.up.railway.app](https://desafio-elitedev-production.up.railway.app) |
+| Health | [https://desafio-elitedev-production.up.railway.app/health](https://desafio-elitedev-production.up.railway.app/health) |
+
+Login demo (seed): senha `Demo@2026` — `organizer@elitedev.local` / `client1@elitedev.local` / `gate@elitedev.local`.
 
 ---
 
@@ -16,6 +25,7 @@ Plataforma em que o **organizador** publica sessões a partir do catálogo **TMD
 | Auth | JWT Bearer + papéis `ORGANIZER` / `CLIENT` / `GATE` |
 | API externa | [TMDb](https://developer.themoviedb.org/docs) (chave só no backend) |
 | Infra local | Docker Compose (Postgres + API + Web) |
+| Deploy | Neon (Postgres) + Railway (API) + Vercel (Web) |
 
 Monorepo npm workspaces:
 
@@ -99,26 +109,6 @@ A chave TMDb **não** vai para o bundle do front: só o Nest chama a TMDb.
 
 ---
 
-## Como executar (desenvolvimento local)
-
-```bash
-cp .env.example .env
-cp .env.example apps/api/.env
-# Preencha TMDB_API_KEY nos dois arquivos (ou exporte no shell)
-
-npm install
-npm run db:up          # só PostgreSQL
-npm run db:deploy      # aplica migrations
-npm run db:seed        # dados de teste
-
-npm run dev:api        # terminal 1 → http://localhost:3001
-npm run dev:web        # terminal 2 → http://localhost:3000
-```
-
-Novas migrations (dev): `npm run db:migrate`.
-
----
-
 ## Dados de teste (seed)
 
 Senha de **todas** as contas: `Demo@2026`
@@ -136,7 +126,7 @@ Há ao menos um evento publicado (“Clube da Luta”) com cadeiras disponíveis
 
 ## Percurso sugerido para o avaliador
 
-Com o stack no ar e o seed aplicado:
+Pode usar a [app publicada](https://desafio-elite-dev-pied.vercel.app) ou subir o stack local com seed:
 
 1. **Organizador** — login → `/organizer` → buscar filme TMDb → publicar (local, data, capacidade, preço).
 2. **Cliente** — login com `client1@…` → `/events` → escolher cadeiras → reservar → pagamento simulado (**aprovar** ou **recusar**).
@@ -164,16 +154,11 @@ Com o stack no ar e o seed aplicado:
 - Seed completo para percorrer o fluxo sem montar nada do zero
 - Docker Compose full stack
 
-### Opcionais já cobertos
+### Opcionais
 
 - Mapa de assentos
 - Docker Compose (Postgres + API + Web)
-
-### Opcionais ainda não feitos
-
-- Busca/filtro avançado no cartaz público
-- Cancelamento com devolução ao estoque
-- **Deploy** público (Vercel / similar) — não obrigatório; +1 ponto se publicado
+- **Deploy** público (Neon + Railway + Vercel)
 
 ### Testes básicos
 
@@ -206,19 +191,52 @@ Inclui:
 | **Identidade visual própria (tema cinema)** | Evitar “AI slop” genérico; tipografia Oswald/Work Sans, accent vermelho/dourado |
 | **Monorepo + Compose** | Um `npm run up` para o avaliador subir tudo |
 
-Artefato de processo: [`docs/PLANO.md`](docs/PLANO.md).
+---
+
+## Deploy (produção)
+
+Stack publicada:
+
+| Serviço | Provedor | Papel |
+| --- | --- | --- |
+| PostgreSQL | [Neon](https://neon.tech) (`sa-east-1`) | Banco + migrations/seed via Prisma |
+| API NestJS | [Railway](https://railway.app) | Dockerfile na raiz; healthcheck `/health`; `PORT` + bind `0.0.0.0` |
+| Web Next.js | [Vercel](https://vercel.com) | Root Directory `apps/web`; só o front |
+
+### O que foi feito no deploy
+
+1. **Neon** — projeto Postgres 16; `DATABASE_URL` com SSL; `prisma migrate deploy` + seed.
+2. **Railway (API)** — builder **Dockerfile** (raiz do monorepo); entrypoint aplica migrate/seed e sobe o Nest; variáveis: `DATABASE_URL`, `JWT_SECRET`, `TICKET_HMAC_SECRET`, `TMDB_API_KEY`, `PORT`, `WEB_ORIGIN`, `NODE_ENV=production`.
+3. **Vercel (Web)** — projeto com Root Directory **`apps/web`** (não `apps/api`); variável `NEXT_PUBLIC_API_URL` apontando para a URL pública do Railway.
+4. **CORS** — `WEB_ORIGIN` no Railway = URL exata do front na Vercel, **sem** barra no final (ex.: `https://desafio-elite-dev-pied.vercel.app`).
+
+URLs atuais:
+
+- Front: https://desafio-elite-dev-pied.vercel.app  
+- API: https://desafio-elitedev-production.up.railway.app  
+
+### Variáveis importantes em produção
+
+| Variável | Onde | Valor típico |
+| --- | --- | --- |
+| `DATABASE_URL` | Railway | Connection string Neon |
+| `JWT_SECRET` / `TICKET_HMAC_SECRET` | Railway | Segredos fortes |
+| `TMDB_API_KEY` | Railway | Chave TMDb |
+| `PORT` | Railway | Porta que o proxy usa (ex. `3001`) |
+| `WEB_ORIGIN` | Railway | URL da Vercel (sem `/` final) |
+| `NEXT_PUBLIC_API_URL` | Vercel | URL pública da API no Railway |
+
+A Vercel **não** hospeda a API Nest: só o Next. Segredos JWT/DB ficam só no Railway.
 
 ---
 
 ## Limitações conhecidas
 
-- Sem deploy público no momento (rodar via Docker/local).
 - Sem cancelamento de reserva/ingresso com devolução automática de cadeira.
 - Busca no cartaz público é navegação pela listagem; busca TMDb é do organizador.
 - Câmera da portaria depende de permissão do browser e HTTPS/localhost; há fallback por digitação.
 - Capacidade do mapa limitada a **260** assentos (26 fileiras × 10) na geração automática.
 - Pagamento é 100% simulado (botões aprovar/recusar), sem provedor externo.
-- Testes automatizados cobrem regras críticas (assentos, HMAC, portaria); ainda não há suíte e2e do fluxo completo.
 
 Se algo não subir: confira `TMDB_API_KEY`, portas `3000`/`3001`/`5432` livres e `docker compose logs`.
 
@@ -242,31 +260,8 @@ Se algo não subir: confira `TMDB_API_KEY`, portas `3000`/`3001`/`5432` livres e
 ---
 
 ## Uso de IA
-
-> **Preencha esta seção antes do envio.** O PDF pede transparência sobre ferramentas, onde a IA ajudou e o que foi feito sem ela. Isso defende decisões e mostra processo.
-
-### Ferramentas usadas
-
-- …
-
-### Onde a IA ajudou
-
-- …
-
-### O que foi feito sem IA / com revisão forte
-
-- …
-
-### Decisões que a IA sugeriu e você mudou (ou manteve de propósito)
-
-- …
-
-### Artefatos de processo versionados
-
-- [`docs/PLANO.md`](docs/PLANO.md)
-- …
-
----
+Foi utilizado o Cursor IA para auxiliar o desenvolvimento, passei as decisões de arquitetura e minhas ideias para o modelo OPUS 5 criar um plano de implementação, a partir disso tomei a frente da implementação, revisanado o código e aplicando minhas ideias de usabilidade e identidade visual no pruduto. Outra parte que o Cursor foi essencial foi no deploy me ajudando a fazer o troubleshoot dos problemas que enfrentei até a aplicação ficar no ar.
+>
 
 ## Estrutura rápida da API
 
@@ -280,9 +275,3 @@ Se algo não subir: confira `TMDB_API_KEY`, portas `3000`/`3001`/`5432` livres e
 | Portaria (GATE) | `POST /gate/validate` |
 
 ---
-
-## Entrega
-
-- Repositório GitHub público, com histórico de commits por funcionalidade.
-- Para avaliar: clonar → configurar `.env` → `make up` (ou `npm run up` / `docker compose up -d --build`) → seguir o percurso com as contas seed.
-- Formulário do desafio: [elitedev.verzel.com.br](https://elitedev.verzel.com.br)
